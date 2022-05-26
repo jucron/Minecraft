@@ -7,6 +7,35 @@ public class program {
         System.out.println(calculateWater(example));
     }
 
+    /*
+    PSEUDOCODE:
+    - Loop thought Array of terrain heights
+        Analise behaviour: goes down, same or up
+        If terrain goes down:
+            If 'topOfWater' not assigned, (pool starts):
+                topOfWaterHeight = lastHeight;
+                topOfWaterTerrainStart = i;
+                Adds to PotentialWater lastHeight-currentHeight (new column of water)
+                lastHeight = currentHeight (passing value to the next iteration)
+            If 'TopOfWater' assigned (pool continues to deepen):
+                Adds to PotentialWater lastHeight-currentHeight (new column of water)
+                Adds to PotentialWater topOfWaterHeight-lastHeight (column of water above)
+                lastHeight = currentHeight (passing value to the next iteration)
+        If terrain goes up:
+            If 'topOfWater' not assigned: does nothing
+            If 'TopOfWater' assigned: (potential end of pool) todo
+                If (currentHeight=topOfWaterHeight) - end of pool:
+                If (currentHeight>topOfWaterHeight) - end of pool and correction:
+                If (currentHeight<topOfWaterHeight) - pool continues:
+
+
+        If terrain stays the same:
+            If 'topOfWater' not assigned does nothing
+            If 'topOfWater' assigned (pool continues)
+                Adds to PotentialWater topOfWaterHeight-currentHeight (column of water from the top)
+                lastHeight = currentHeight (passing value to the next iteration)
+
+     */
 
 
     public static int calculateWater(int[] terrain) {
