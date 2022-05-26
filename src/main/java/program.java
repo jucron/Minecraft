@@ -1,60 +1,64 @@
 package main.java;
 
-public class program {
-    public static void main(String[] args) {
-        int[] example = {3,2,1,3,1,1,2,1,2};
+import java.util.List;
 
-        System.out.println(calculateWater(example));
+public class program {
+
+    public static void main(String[] args) {
+
+        int[] example1 = {3,2,1,3,1,1,2,1,2};
+        int[] example2 = {3,3,1,2,4,1,2};
+        int[] example3 = {4,4,1,2,1,3,3};
+        int[] example4 = {3,2,1,3,1,1,2,1,2};
+        int count = 1;
+
+        List<int[]> listOfTests = List.of(example1,example2,example3,example4);
+        listOfTests.forEach(example -> System.out.println("Total volume calculated is: "+calculateWater(example)));
+//        System.out.println("Total volume calculated is: "+calculateWater(example2));
     }
 
-    /*
-    PSEUDOCODE:
-    - Loop thought Array of terrain heights
-        Analise behaviour: goes down, same or up
-        If terrain goes down:
-            If 'topOfWater' not assigned, (pool starts):
-                topOfWaterHeight = lastHeight;
-                topOfWaterTerrainStart = i;
-                Adds to PotentialWater lastHeight-currentHeight (new column of water)
-                lastHeight = currentHeight (passing value to the next iteration)
-            If 'TopOfWater' assigned (pool continues to deepen):
-                Adds to PotentialWater lastHeight-currentHeight (new column of water)
-                Adds to PotentialWater topOfWaterHeight-lastHeight (column of water above)
-                lastHeight = currentHeight (passing value to the next iteration)
-        If terrain goes up:
-            If 'topOfWater' not assigned: does nothing
-            If 'TopOfWater' assigned: (potential end of pool) todo
-                If (currentHeight=topOfWaterHeight) - end of pool:
-                If (currentHeight>topOfWaterHeight) - end of pool and correction:
-                If (currentHeight<topOfWaterHeight) - pool continues:
-
-
-        If terrain stays the same:
-            If 'topOfWater' not assigned does nothing
-            If 'topOfWater' assigned (pool continues)
-                Adds to PotentialWater topOfWaterHeight-currentHeight (column of water from the top)
-                lastHeight = currentHeight (passing value to the next iteration)
-
-     */
-
-
     public static int calculateWater(int[] terrain) {
-
-        int totalWaterColumn = 0;
-        int lastWaterColumn = 0;
-        int topOfWater = 0;
+        WaterData waterData = new WaterData();
+        int lastHeight;
+        int currentHeight=0;
         for (int i=1;i<terrain.length;i++) {
-            if (terrain[i]<terrain[i-1]) { //if terrain goes down: check if topOfWater, add currentColumn+lastColumn
-                int currentWaterColumn = (terrain[i-1]-terrain[i])+lastWaterColumn;
-                totalWaterColumn+=currentWaterColumn; //updating total columns
-                lastWaterColumn=currentWaterColumn; //updating lastColumn
-                topOfWater = Math.max(topOfWater,terrain[i-1]); //updating topOfWater
-            } else if (terrain[i]==terrain[i-1]){ //if terrain stays the same: add lastColumn
-                totalWaterColumn+= lastWaterColumn; //updating total columns
-            } else if (terrain[i]>terrain[i-1]){ //if terrain goes up:
+            //Heights extraction:
+            lastHeight=terrain[i-1];
+            currentHeight=terrain[i];
 
+            if (currentHeight==lastHeight) { //If terrain stays the same:
+                if (waterData.getTopOfWaterHeight()!=0) { //If topOfWaterHeight assigned (pool continues)
+                    waterData.poolContinues(lastHeight);
+                }
+                //If topOfWaterHeight not assigned ((does nothing))
+            } else if (currentHeight>lastHeight) { //If terrain goes up:
+                if (waterData.getTopOfWaterHeight()!=0) { //If topOfWaterHeight assigned: (potential end of pool)
+                    if (currentHeight<waterData.getTopOfWaterHeight()) { //If (currentHeight<topOfWaterHeight) - ((pool continues)):
+                        waterData.poolContinues(lastHeight);
+                    } else if (currentHeight==waterData.getTopOfWaterHeight()) { //If (currentHeight=topOfWaterHeight) - ((end of pool)):
+                        waterData.endOfPool();
+                    } else if (currentHeight>waterData.getTopOfWaterHeight()) { //If (currentHeight>topOfWaterHeight) - ((end of pool with correction)):
+                        waterData.poolContinues(lastHeight);
+                        waterData.endOfPoolWithCorrection(currentHeight);
+                    }
+                }
+                //If topOfWaterHeight not assigned ((does nothing))
+            } else { //last possible choice - If terrain goes down:
+                if (waterData.getTopOfWaterHeight()!=0) { //If topOfWaterHeight assigned ((pool continues)):
+                    waterData.poolContinues(lastHeight);
+                } else { //If topOfWaterHeight not assigned, ((pool starts)):
+                    waterData.poolStarts(currentHeight,lastHeight,i-1);
+                }
             }
         }
-        return totalWaterColumn;
+        //terrain ends: (end of loop)
+        if (waterData.getTopOfWaterHeight()!=0) { //If topOfWaterHeight assigned ((potential last end of pool)) removing ((pool continues))
+            if(currentHeight==waterData.getTopOfWaterHeight()) { //If (currentHeight=topOfWaterHeight) - ((end of pool))
+                waterData.endOfPool();
+            } else { //If (currentHeight < OR > topOfWaterHeight) - ((last correction of potential water)) and ((end of pool))
+                waterData.endOfPoolWithLastCorrection(currentHeight,terrain.length-1);
+            }
+        } // If topOfWaterHeight not assigned ((does nothing))
+        return waterData.getTotalWater();
     }
 }
