@@ -1,5 +1,6 @@
 package main.java;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class program {
@@ -12,53 +13,61 @@ public class program {
         int[] example4 = {3,2,1,3,1,1,2,1,2};
         int count = 1;
 
-        List<int[]> listOfTests = List.of(example1,example2,example3,example4);
-        listOfTests.forEach(example -> System.out.println("Total volume calculated is: "+calculateWater(example)));
-//        System.out.println("Total volume calculated is: "+calculateWater(example2));
+//        List<int[]> listOfTests = List.of(example1,example2,example3,example4);
+//        listOfTests.forEach(example -> System.out.println("Total volume calculated is: "+calculateWater(example)));
+        System.out.println("Total volume calculated is: "+calculateWater(example1,0,0));
     }
 
-    public static int calculateWater(int[] terrain) {
-        WaterData waterData = new WaterData();
-        int lastHeight;
-        int currentHeight=0;
-        for (int i=1;i<terrain.length;i++) {
-            //Heights extraction:
-            lastHeight=terrain[i-1];
-            currentHeight=terrain[i];
+    public static int calculateWater(int[] terrain, int startIndex, int startingWaterBlocks) {
 
-            if (currentHeight==lastHeight) { //If terrain stays the same:
-                if (waterData.getTopOfWaterHeight()!=0) { //If topOfWaterHeight assigned (pool continues)
-                    waterData.poolContinues(lastHeight);
-                }
-                //If topOfWaterHeight not assigned ((does nothing))
-            } else if (currentHeight>lastHeight) { //If terrain goes up:
-                if (waterData.getTopOfWaterHeight()!=0) { //If topOfWaterHeight assigned: (potential end of pool)
-                    if (currentHeight<waterData.getTopOfWaterHeight()) { //If (currentHeight<topOfWaterHeight) - ((pool continues)):
-                        waterData.poolContinues(lastHeight);
-                    } else if (currentHeight==waterData.getTopOfWaterHeight()) { //If (currentHeight=topOfWaterHeight) - ((end of pool)):
-                        waterData.endOfPool();
-                    } else if (currentHeight>waterData.getTopOfWaterHeight()) { //If (currentHeight>topOfWaterHeight) - ((end of pool with correction)):
-                        waterData.poolContinues(lastHeight);
-                        waterData.endOfPoolWithCorrection(currentHeight);
-                    }
-                }
-                //If topOfWaterHeight not assigned ((does nothing))
-            } else { //last possible choice - If terrain goes down:
-                if (waterData.getTopOfWaterHeight()!=0) { //If topOfWaterHeight assigned ((pool continues)):
-                    waterData.poolContinues(lastHeight);
-                } else { //If topOfWaterHeight not assigned, ((pool starts)):
-                    waterData.poolStarts(currentHeight,lastHeight,i-1);
-                }
+
+        Edge firstEdge = findFirstEdge(terrain, startIndex); //returns null if NOT found
+        //if there is no firstEdge forward OR startIndex is at the end, end recursive calculation
+        if ((firstEdge==null) || (startIndex>terrain.length-2)) {
+            return startingWaterBlocks;
+        }
+        Edge lastEdge = findLastEdge(terrain,firstEdge); //returns null if NOT found
+        if (lastEdge==null) { //If there is no lastEdge for this firstEdge, continue calculation for next index
+            return calculateWater(terrain, startIndex+1,startingWaterBlocks);
+        }
+        int waterBlocks = countWaterBlocks(terrain,firstEdge,lastEdge);
+        return calculateWater(terrain, lastEdge.index,(waterBlocks+startingWaterBlocks));
+    }
+
+    public static int countWaterBlocks(int[] terrain, Edge firstEdge, Edge lastEdge) {
+        int topOfWaterHeight = firstEdge.terrainLevel;
+        int blocksOfWater =0;
+        for (int i = (firstEdge.index+1); i < (lastEdge.index); i++) {
+            blocksOfWater+=(topOfWaterHeight-terrain[i]);
+        }
+        return blocksOfWater;
+    }
+
+    public static Edge findLastEdge(int[] terrain, Edge firstEdge) {
+        if (firstEdge.index+2>(terrain.length-1)){ //If is outOfBounds
+            return null;
+        }
+        for (int i = (firstEdge.index+2); i < terrain.length; i++) {
+            if (firstEdge.terrainLevel==terrain[i]) { //if last edge, for this, was found
+                return new Edge(i,terrain[i]);
             }
         }
-        //terrain ends: (end of loop)
-        if (waterData.getTopOfWaterHeight()!=0) { //If topOfWaterHeight assigned ((potential last end of pool)) removing ((pool continues))
-            if(currentHeight==waterData.getTopOfWaterHeight()) { //If (currentHeight=topOfWaterHeight) - ((end of pool))
-                waterData.endOfPool();
-            } else { //If (currentHeight < OR > topOfWaterHeight) - ((last correction of potential water)) and ((end of pool))
-                waterData.endOfPoolWithLastCorrection(currentHeight,terrain.length-1);
+        //Last edge was NOT found:
+        return null;
+    }
+
+    public static Edge findFirstEdge(int[] terrain, int startIndex) {
+        for (int i = startIndex+1; i < terrain.length; i++) {
+            //Data extraction:
+            int lastIndex = i-1;
+            int lastHeight = terrain[lastIndex];
+            int currentHeight = terrain[i];
+            //
+            if (currentHeight < lastHeight) { //If terrain goes down:
+                return new Edge(lastIndex,lastHeight);
             }
-        } // If topOfWaterHeight not assigned ((does nothing))
-        return waterData.getTotalWater();
+        }
+        //first edge was NOT found
+        return null;
     }
 }
