@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="Minecraft" target="1.7" />
+      <module name="Minecraft" target="11" />
     </bytecodeTargetLevel>
   </component>
 </project>

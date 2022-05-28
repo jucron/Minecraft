@@ -1,8 +1,8 @@
-package main.java;
+package app;
 
 public class Edge {
-    int index;
-    int terrainLevel;
+    public int index;
+    public int terrainLevel;
 
     public Edge(int index, int terrainLevel) {
         this.index = index;
