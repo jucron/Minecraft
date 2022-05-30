@@ -15,7 +15,6 @@ public class Program {
         }
         //Step 1: Find a height variation going DOWN (firstEdge), from this startIndex forward
         Edge firstEdge = findFirstEdge(terrain, startIndex); //returns null if NOT found
-
         //Step 2: Check if there is no firstEdge OR startIndex is at the end, finish calculation or reverse
         if ((firstEdge==null) || (startIndex>terrain.length-2)) {
             //If first round, start the second round: calculation in reverse
@@ -70,23 +69,23 @@ public class Program {
             //first-round: if terrainLVL is equal or higher than firstEdge, found lastEdge
             if (!reverse && firstEdge.terrainLevel<=terrain[i]) {
                 return new Edge(i, terrain[i]);
-                //second-round: if terrainLVL equals to firstEdge, break loop cause this one was already included in first-round
+            //second-round: if terrainLVL equals to firstEdge, break loop cause this one was already included in first-round
             } else if (firstEdge.terrainLevel==terrain[i]) {
                 break;  //does not count this Edge (already included in first round)
-                //second-round: if terrainLVL higher than firstEdge, found lastEdge
-                //But must check if we might not have been included in first-round
+            //second-round: if terrainLVL higher than firstEdge, found lastEdge
+            //NOTE: Even so, this might already been included in first-round (submerged terrains) - will be checked in includeWaterBlocks method
             } else if (firstEdge.terrainLevel<terrain[i]) {
                 return new Edge(i,terrain[i]);
             }
         }
-        //Last edge was NOT found:
+        //If Last edge was NOT found:
         return null;
     }
     public static int includeWaterBlocks(int[] terrain, Edge firstEdge, Edge lastEdge) {
         int topOfWaterHeight = firstEdge.terrainLevel;
         int blocksOfWater =0;
         int totalBlocksCount=0;
-        for (int i = (firstEdge.index+1); i < (lastEdge.index); i++) {
+        for (int i = (firstEdge.index+1); i < (lastEdge.index); i++) { //loop through first to last edge
             blocksOfWater=(topOfWaterHeight-terrain[i]);
             totalBlocksCount+=blocksOfWater;
             //If It's first-round, include everything in waterBlocks
@@ -95,7 +94,7 @@ public class Program {
             }else { //If It's second-round, check if index is already included
                 int notReversedIndex = terrain.length-1-i;
                 Optional<Integer> waterBlocksIncluded = getWaterBlockIncludedInThisIndex(notReversedIndex);
-                //If this index is not listed yet OR old value is smaller, include the new one
+                //If this index is not listed yet OR old value is smaller, replace with the new one
                 if (waterBlocksIncluded.isEmpty() || waterBlocksIncluded.get()<blocksOfWater) {
                     waterBlocks.put(notReversedIndex,blocksOfWater);
                 }
