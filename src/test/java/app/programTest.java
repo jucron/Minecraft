@@ -17,6 +17,7 @@ class programTest {
         int[] example3 = {4,4,1,2,1,3,3};
         int[] example4 = {5,1,6,9,8,1};
         int[] example5 = {1,5,3,2,1,1};
+        int[] example6 = {};
         //when
         //then
         assertEquals(6, Program.calculateWater(example1,0));
@@ -24,6 +25,9 @@ class programTest {
         assertEquals(5, Program.calculateWater(example3,0));
         assertEquals(4, Program.calculateWater(example4,0));
         assertEquals(0, Program.calculateWater(example5,0));
+        assertEquals(-1, Program.calculateWater(example5,6));
+        assertEquals(-1, Program.calculateWater(null,0));
+        assertEquals(-1, Program.calculateWater(example6,0));
     }
 
     @Test
@@ -73,7 +77,7 @@ class programTest {
 
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void findFirstEdge() {
         //when
         Edge edge1 = Program.findFirstEdge(new int[]{3,2,3},0);
@@ -93,10 +97,10 @@ class programTest {
     }
     @Test
     void reverseArray() {
-        int[] array1 = Program.reverseArray(new int[]{3,2,1,0}); int[] expected1 = new int[]{0,1,2,3};
-        int[] array2 = Program.reverseArray(new int[]{5,8,1,0}); int[] expected2 = new int[]{0,1,8,5};
-        int[] array3 = Program.reverseArray(new int[]{1,4,3,4,9,1,5,9,3}); int[] expected3 = new int[]{3,9,5,1,9,4,3,4,1};
-        int[] array4 = Program.reverseArray(new int[]{0,0,0,1}); int[] expected4 = new int[]{1,0,0,0};
+        int[] array1 = Program.reverseTerrain(new int[]{3,2,1,0}); int[] expected1 = new int[]{0,1,2,3};
+        int[] array2 = Program.reverseTerrain(new int[]{5,8,1,0}); int[] expected2 = new int[]{0,1,8,5};
+        int[] array3 = Program.reverseTerrain(new int[]{1,4,3,4,9,1,5,9,3}); int[] expected3 = new int[]{3,9,5,1,9,4,3,4,1};
+        int[] array4 = Program.reverseTerrain(new int[]{0,0,0,1}); int[] expected4 = new int[]{1,0,0,0};
         assertArrayEquals(expected1,array1);
         assertArrayEquals(expected2,array2);
         assertArrayEquals(expected3,array3);

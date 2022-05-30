@@ -1,24 +1,27 @@
 package app;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 public class Program {
-    private static boolean reverse;
-    private static Map<Integer, Integer> waterBlocks = new HashMap<Integer, Integer>(); //Index vs WaterBlocks
+    private static boolean reverse = false;
+    private static Map<Integer, Integer> waterBlocks = new HashMap<>(); //Index vs WaterBlocks
     //Main method:
     public static int calculateWater(int[] terrain, int startIndex) {
+        //Pre-calculation: parameters validation:
+        if (!areParametersValid(terrain,startIndex)) {
+            return -1; //If validations don't pass, return a representation of error
+        }
         //Step 1: Find a height variation going DOWN (firstEdge), from this startIndex forward
         Edge firstEdge = findFirstEdge(terrain, startIndex); //returns null if NOT found
 
-        //Step 2: if there is no firstEdge OR startIndex is at the end, finish calculation or reverse
+        //Step 2: Check if there is no firstEdge OR startIndex is at the end, finish calculation or reverse
         if ((firstEdge==null) || (startIndex>terrain.length-2)) {
             //If first round, start the second round: calculation in reverse
             if (!reverse) {
                 reverse=true; //start reverse calculation
-                return calculateWater(reverseArray(terrain),0);
+                return calculateWater(reverseTerrain(terrain),0);
             } else {
                 //If second round, return final count
                 reverse=false;
@@ -36,6 +39,12 @@ public class Program {
         return calculateWater(terrain, lastEdge.index);
     }
     //Secondary methods:
+    private static boolean areParametersValid(int[] terrain, int startIndex) {
+        if (terrain==null || terrain.length==0 || startIndex<0 || startIndex>(terrain.length-1)) {
+            return false;
+        }
+        return true;
+    }
     public static Edge findFirstEdge(int[] terrain, int startIndex) {
         //Validation to end round: (when the index is close to the end)
         //If two indexes forward is surpass the last array's index, return null
@@ -85,7 +94,7 @@ public class Program {
                 waterBlocks.put(i, blocksOfWater);
             }else { //If It's second-round, check if index is already included
                 int notReversedIndex = terrain.length-1-i;
-                Optional<Integer> waterBlocksIncluded = checkIfWaterBlocksAreIncluded(notReversedIndex);
+                Optional<Integer> waterBlocksIncluded = getWaterBlockIncludedInThisIndex(notReversedIndex);
                 //If this index is not listed yet OR old value is smaller, include the new one
                 if (waterBlocksIncluded.isEmpty() || waterBlocksIncluded.get()<blocksOfWater) {
                     waterBlocks.put(notReversedIndex,blocksOfWater);
@@ -94,7 +103,7 @@ public class Program {
         }
         return totalBlocksCount;
     }
-    private static Optional<Integer> checkIfWaterBlocksAreIncluded(int notReversedIndex) {
+    private static Optional<Integer> getWaterBlockIncludedInThisIndex(int notReversedIndex) {
         if (waterBlocks.get(notReversedIndex)==null) {
             return Optional.empty();
         } else {
@@ -107,7 +116,7 @@ public class Program {
         return totalWaterCount;
     }
     //Support methods:
-    public static int[] reverseArray(int[] terrain) {
+    public static int[] reverseTerrain(int[] terrain) {
         int[] reversedTerrain = new int[terrain.length];
         for (int i=0;i<terrain.length;i++) {
             reversedTerrain[terrain.length-1-i]=terrain[i];
@@ -117,6 +126,7 @@ public class Program {
     public static void clearWaterBlocks() {
         waterBlocks.clear();
     }
+    //For testing:
     public static int finalWaterCountTesting(Map<Integer, Integer> waterBlocksTest) {
         waterBlocks.putAll(waterBlocksTest);
         return finalWaterCount();
